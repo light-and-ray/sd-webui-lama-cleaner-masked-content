@@ -1,6 +1,6 @@
-# Lama clear for masked content
+# Lama cleaner for masked content
 
-This extenstion adds new value of "Masked content" field in img2img -> inpaint tap inside [AUTOMATIC1111/stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui). You need to install [Mikubill/sd-webui-controlnet](https://github.com/Mikubill/sd-webui-controlnet) extension
+This extenstion adds new value of "Masked content" field in img2img -> inpaint tap inside [AUTOMATIC1111/stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui). Requires [Mikubill/sd-webui-controlnet](https://github.com/Mikubill/sd-webui-controlnet) extension
 
 This option means how to preprocess masked content before pass it into stable diffusion
 
