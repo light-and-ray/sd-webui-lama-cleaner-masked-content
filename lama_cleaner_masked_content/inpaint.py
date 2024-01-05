@@ -68,18 +68,13 @@ class CacheData:
 cachedData = None
 
 
-def limitSizeByOneDemention(image: Image, size):
-    h, w = image.size
-    if h > w:
-        if h > size:
-            w = size / h * w
-            h = size
-    else:
-        if w > size:
-            h = size / w * h
-            w = size
+def limitSizeByMinDemention(image: Image, size):
+    w, h = image.size
+    k = size / min(w, h)
+    newW = w * k
+    newH = h * k
 
-    return int(h), int(w)
+    return int(newW), int(newH)
 
 
 def lamaInpaint(image: Image, mask: Image, upscaler: str):
@@ -93,7 +88,7 @@ def lamaInpaint(image: Image, mask: Image, upscaler: str):
     else:
         initImage = copy.copy(image)
         image = copy.copy(initImage)
-        newW, newH = limitSizeByOneDemention(image, 256)
+        newW, newH = limitSizeByMinDemention(image, 256)
         image256 = resize_image(0, image.convert('RGB'), newW, newH, None).convert('RGBA')
         mask256 = resize_image(0, mask.convert('RGB'), newW, newH, None).convert('L')
         tmpImage = convertIntoCNMaskedImageFromat(image256, mask256)
