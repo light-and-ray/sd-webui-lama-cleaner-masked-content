@@ -100,6 +100,7 @@ def lamaInpaint(image: Image, mask: Image, upscaler: str):
             areImagesTheSame(cachedData.mask, mask):
         result = copy.copy(cachedData.result)
         print("lama inpainted restored from cache")
+        shared.state.assign_current_image(result)
     else:
         initImage = copy.copy(image)
         image = copy.copy(initImage)
@@ -111,6 +112,7 @@ def lamaInpaint(image: Image, mask: Image, upscaler: str):
         tmpImage = convertImageIntoPILFormat(tmpImage)
         inpaintedImage = image256
         inpaintedImage.paste(tmpImage, mask256)
+        shared.state.assign_current_image(inpaintedImage)
         w, h = image.size
         inpaintedImage = resize_image(0, inpaintedImage.convert('RGB'), w, h, upscaler).convert('RGBA')
         result = image
