@@ -51,7 +51,7 @@ def lamaCNInpaint(image):
             raise Exception("Controlnet is not installed for 'Lama Cleaner'")
     image, _ = g_cn_lama_inpaint(image)
     LOGGER.propagate = oldPropagate
-    if shared.cmd_opts.lowvram:
+    if shared.cmd_opts.lowvram or shared.cmd_opts.medvram:
         unloadLama()
     return image
 
