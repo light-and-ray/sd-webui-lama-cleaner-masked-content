@@ -5,6 +5,7 @@ import logging
 from typing import Any
 from dataclasses import dataclass
 from modules.images import resize_image
+from modules import shared
 
 
 g_cn_HWC3 = None
@@ -23,6 +24,18 @@ def convertIntoCNMaskedImageFromat(init_images, image_mask):
     return image
 
 
+g_unload_lama = None
+def unloadLama(): # about 195 MB
+    global g_unload_lama
+    if g_unload_lama is None:
+        try:
+            from scripts.processor import unload_lama_inpaint
+            g_unload_lama = unload_lama_inpaint
+        except ImportError as e:
+            raise Exception("Controlnet is not installed for 'Lama Cleaner'")
+    g_unload_lama()
+    
+
 g_cn_lama_inpaint = None
 def lamaCNInpaint(image):
     global g_cn_lama_inpaint
@@ -38,6 +51,8 @@ def lamaCNInpaint(image):
             raise Exception("Controlnet is not installed for 'Lama Cleaner'")
     image, _ = g_cn_lama_inpaint(image)
     LOGGER.propagate = oldPropagate
+    if shared.cmd_opts.lowvram:
+        unloadLama()
     return image
 
 
