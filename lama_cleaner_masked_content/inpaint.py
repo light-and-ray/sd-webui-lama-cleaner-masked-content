@@ -8,7 +8,7 @@ from modules.images import resize_image
 
 
 g_cn_HWC3 = None
-def chooseInputImage(init_images, image_mask):
+def convertIntoCNMaskedImageFromat(init_images, image_mask):
     global g_cn_HWC3
     if g_cn_HWC3 is None:
         try:
@@ -24,7 +24,7 @@ def chooseInputImage(init_images, image_mask):
 
 
 g_cn_lama_inpaint = None
-def lamaInpaint(image):
+def lamaCNInpaint(image):
     global g_cn_lama_inpaint
     LOGGER = logging.getLogger('annotator.lama.saicinpainting.training.trainers.base')
     oldPropagate = LOGGER.propagate
@@ -34,10 +34,17 @@ def lamaInpaint(image):
             from scripts.processor import lama_inpaint
             g_cn_lama_inpaint = lama_inpaint
         except ImportError as e:
+            LOGGER.propagate = oldPropagate
             raise Exception("Controlnet is not installed for 'Lama Cleaner'")
     image, _ = g_cn_lama_inpaint(image)
     LOGGER.propagate = oldPropagate
     return image
+
+
+def convertImageIntoPILFormat(image):
+    return Image.fromarray(
+        np.ascontiguousarray(image.clip(0, 255).astype(np.uint8)).copy()
+    )
 
 
 def areImagesTheSame(image_one, image_two):
@@ -72,10 +79,10 @@ def limitSizeByOneDemention(image: Image, size):
             h = size / w * h
             w = size
 
-    return (int(h), int(w))
+    return int(h), int(w)
 
 
-def inpaint(image: Image, mask: Image, upscaler: str):
+def lamaInpaint(image: Image, mask: Image, upscaler: str):
     global cachedData
     result = None
     if cachedData is not None and\
@@ -89,9 +96,9 @@ def inpaint(image: Image, mask: Image, upscaler: str):
         newW, newH = limitSizeByOneDemention(image, 256)
         image256 = resize_image(0, image.convert('RGB'), newW, newH, None).convert('RGBA')
         mask256 = resize_image(0, mask.convert('RGB'), newW, newH, None).convert('L')
-        tmpImage = chooseInputImage(image256, mask256)
-        tmpImage = lamaInpaint(tmpImage)
-        tmpImage = Image.fromarray(np.ascontiguousarray(tmpImage.clip(0, 255).astype(np.uint8)).copy())
+        tmpImage = convertIntoCNMaskedImageFromat(image256, mask256)
+        tmpImage = lamaCNInpaint(tmpImage)
+        tmpImage = convertImageIntoPILFormat(tmpImage)
         inpaintedImage = image256
         inpaintedImage.paste(tmpImage, mask256)
         w, h = image.size

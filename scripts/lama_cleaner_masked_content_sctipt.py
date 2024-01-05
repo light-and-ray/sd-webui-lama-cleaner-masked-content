@@ -1,6 +1,6 @@
 import modules.scripts
 from modules.processing import StableDiffusionProcessingImg2Img
-from lama_cleaner_masked_content.inpaint import inpaint
+from lama_cleaner_masked_content.inpaint import lamaInpaint
 from lama_cleaner_masked_content.options import getUpscaler
 
 
@@ -32,7 +32,7 @@ class Script(modules.scripts.Script):
         if not (hasattr(p, "image_mask") and bool(p.image_mask)):
             return
         
-        p.init_images[0] = inpaint(p.init_images[0], p.image_mask, getUpscaler())
+        p.init_images[0] = lamaInpaint(p.init_images[0], p.image_mask, getUpscaler())
         p.inpainting_fill = 1 # original
 
 
