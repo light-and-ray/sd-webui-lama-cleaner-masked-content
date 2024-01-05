@@ -42,10 +42,11 @@ def addIntoMaskedContent(component, **kwargs):
     elem_id = kwargs.get('elem_id', None)
     if elem_id not in INPAINTING_FILL_ELEMENTS:
         return
-    if 'lama cleaner' not in component.choices:
-        component.choices.append(('lama cleaner', 'lama cleaner'))
+    newElement = ('lama cleaner', 'lama cleaner')
+    if newElement not in component.choices:
+        component.choices.append(newElement)
     global NEW_ELEMENT_INDEX
-    NEW_ELEMENT_INDEX = component.choices.index(('lama cleaner', 'lama cleaner'))
+    NEW_ELEMENT_INDEX = component.choices.index(newElement)
 
 
 modules.scripts.script_callbacks.on_after_component(addIntoMaskedContent)
