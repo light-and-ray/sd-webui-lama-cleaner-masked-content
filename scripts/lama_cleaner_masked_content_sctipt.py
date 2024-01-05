@@ -8,10 +8,10 @@ INPAINTING_FILL_ELEMENTS = ['img2img_inpainting_fill', 'replacer_inpainting_fill
 
 
 
-class Script(modules.scripts.Script):   
+class Script(modules.scripts.Script):
     def __init__(self):
         pass
-        
+
     def title(self):
         return "Lama-cleaner-masked-content"
 
@@ -31,7 +31,7 @@ class Script(modules.scripts.Script):
             return
         if not (hasattr(p, "image_mask") and bool(p.image_mask)):
             return
-        
+
         p.init_images[0] = lamaInpaint(p.init_images[0], p.image_mask, getUpscaler())
         p.inpainting_fill = 1 # original
 

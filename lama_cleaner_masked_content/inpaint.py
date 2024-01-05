@@ -83,7 +83,7 @@ def lamaInpaint(image: Image, mask: Image, upscaler: str):
     if cachedData is not None and\
             areImagesTheSame(cachedData.image, image) and\
             areImagesTheSame(cachedData.mask, mask):
-        result = cachedData.result
+        result = copy.copy(cachedData.result)
         print("lama inpainted restored from cache")
     else:
         initImage = copy.copy(image)
@@ -102,5 +102,5 @@ def lamaInpaint(image: Image, mask: Image, upscaler: str):
         result.paste(inpaintedImage, mask)
         cachedData = CacheData(initImage, copy.copy(mask), copy.copy(result))
         print("lama inpainted cached")
-    
+
     return result
