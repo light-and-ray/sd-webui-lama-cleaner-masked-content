@@ -1,5 +1,5 @@
 import numpy as np
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageOps
 import copy
 import logging
 from typing import Any
@@ -9,7 +9,7 @@ from modules import shared
 
 
 g_cn_HWC3 = None
-def convertIntoCNMaskedImageFromat(init_images, image_mask):
+def convertIntoCNMaskedImageFromat(image, mask):
     global g_cn_HWC3
     if g_cn_HWC3 is None:
         try:
@@ -18,8 +18,8 @@ def convertIntoCNMaskedImageFromat(init_images, image_mask):
         except ImportError as e:
             raise Exception("Controlnet is not installed for 'Lama Cleaner'")
 
-    color = g_cn_HWC3(np.asarray(init_images))
-    alpha = g_cn_HWC3(np.asarray(image_mask))[:, :, 0:1]
+    color = g_cn_HWC3(np.asarray(image))
+    alpha = g_cn_HWC3(np.asarray(mask))[:, :, 0:1]
     image = np.concatenate([color, alpha], axis=2)
     return image
 
@@ -78,6 +78,8 @@ def areImagesTheSame(image_one, image_two):
 class CacheData:
     image: Any
     mask: Any
+    invert: Any
+    upscaler: Any
     result: Any
 
 cachedData = None
@@ -92,21 +94,26 @@ def limitSizeByMinDemention(image: Image, size):
     return int(newW), int(newH)
 
 
-def lamaInpaint(image: Image, mask: Image, upscaler: str):
+def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str):
     global cachedData
     result = None
     if cachedData is not None and\
+            cachedData.invert == invert and\
+            cachedData.upscaler == upscaler and\
             areImagesTheSame(cachedData.image, image) and\
             areImagesTheSame(cachedData.mask, mask):
         result = copy.copy(cachedData.result)
         print("lama inpainted restored from cache")
         shared.state.assign_current_image(result)
     else:
+        initMask = copy.copy(mask)
+        if invert == 1:
+            mask = ImageOps.invert(mask)
         initImage = copy.copy(image)
         image = copy.copy(initImage)
         newW, newH = limitSizeByMinDemention(image, 256)
-        image256 = resize_image(0, image.convert('RGB'), newW, newH, None).convert('RGBA')
-        mask256 = resize_image(0, mask.convert('RGB'), newW, newH, None).convert('L')
+        image256 = image.resize((newW, newH))
+        mask256 = mask.resize((newW, newH))
         tmpImage = convertIntoCNMaskedImageFromat(image256, mask256)
         tmpImage = lamaCNInpaint(tmpImage)
         tmpImage = convertImageIntoPILFormat(tmpImage)
@@ -117,7 +124,7 @@ def lamaInpaint(image: Image, mask: Image, upscaler: str):
         inpaintedImage = resize_image(0, inpaintedImage.convert('RGB'), w, h, upscaler).convert('RGBA')
         result = image
         result.paste(inpaintedImage, mask)
-        cachedData = CacheData(initImage, copy.copy(mask), copy.copy(result))
+        cachedData = CacheData(initImage, initMask, invert, upscaler, copy.copy(result))
         print("lama inpainted cached")
 
     return result

@@ -32,7 +32,8 @@ class Script(modules.scripts.Script):
         if not (hasattr(p, "image_mask") and bool(p.image_mask)):
             return
 
-        p.init_images[0] = lamaInpaint(p.init_images[0], p.image_mask, getUpscaler())
+        p.init_images[0] = lamaInpaint(p.init_images[0], p.image_mask,
+                                       p.inpainting_mask_invert, getUpscaler())
         p.inpainting_fill = 1 # original
 
 
