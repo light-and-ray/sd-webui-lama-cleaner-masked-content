@@ -18,8 +18,8 @@ def convertIntoCNMaskedImageFromat(image, mask):
         except ImportError as e:
             raise Exception("Controlnet is not installed for 'Lama Cleaner'")
 
-    color = g_cn_HWC3(np.asarray(image))
-    alpha = g_cn_HWC3(np.asarray(mask))[:, :, 0:1]
+    color = g_cn_HWC3(np.asarray(image).astype(np.uint8))
+    alpha = g_cn_HWC3(np.asarray(mask.convert('L')).astype(np.uint8))[:, :, 0:1]
     image = np.concatenate([color, alpha], axis=2)
     return image
 
