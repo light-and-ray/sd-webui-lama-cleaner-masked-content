@@ -37,3 +37,7 @@ Go to Settings -> Postprocessing -> Upscaling -> Upscaler for lama cleaner maske
 ![](images/options.jpg)
 
 Default is `ESRGAN_4x`
+
+You can also add this options in ui, using "Settings for img2img"
+
+![](images/options_in_ui.jpg)
