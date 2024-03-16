@@ -7,6 +7,12 @@ from dataclasses import dataclass
 from modules.images import resize_image
 from modules import shared
 
+try:
+    from lib_controlnet import global_state
+    IS_WEBUI_FORGE = True
+except ImportError:
+    IS_WEBUI_FORGE = False
+
 
 g_cn_HWC3 = None
 def convertIntoCNMaskedImageFromat(image, mask):
@@ -22,6 +28,18 @@ def convertIntoCNMaskedImageFromat(image, mask):
     alpha = g_cn_HWC3(np.asarray(mask.convert('L')).astype(np.uint8))[:, :, 0:1]
     image = np.concatenate([color, alpha], axis=2)
     return image
+
+
+
+def convertIntoCNImageFromat(image):
+    global g_cn_HWC3
+    if g_cn_HWC3 is None:
+        from annotator.util import HWC3
+        g_cn_HWC3 = HWC3
+
+    color = g_cn_HWC3(np.asarray(image).astype(np.uint8))
+    return color
+
 
 
 g_unload_lama = None
@@ -54,6 +72,11 @@ def lamaCNInpaint(image):
     if shared.cmd_opts.lowvram or shared.cmd_opts.medvram:
         unloadLama()
     return image
+
+
+def lamaCNInpaintForge(image, mask):
+    lama = global_state.get_preprocessor('inpaint_only+lama')
+    return lama(image, None, input_mask=mask)
 
 
 def convertImageIntoPILFormat(image):
@@ -114,8 +137,10 @@ def lamaInpaint(image: Image, mask: Image, invert: int, upscaler: str):
         newW, newH = limitSizeByMinDemention(image, 256)
         image256 = image.resize((newW, newH))
         mask256 = mask.resize((newW, newH))
-        tmpImage = convertIntoCNMaskedImageFromat(image256, mask256)
-        tmpImage = lamaCNInpaint(tmpImage)
+        if IS_WEBUI_FORGE:
+            tmpImage = lamaCNInpaintForge(convertIntoCNImageFromat(image256), convertIntoCNImageFromat(mask256))
+        else:
+            tmpImage = lamaCNInpaint(convertIntoCNMaskedImageFromat(image256, mask256))
         tmpImage = convertImageIntoPILFormat(tmpImage)
         inpaintedImage = image256
         inpaintedImage.paste(tmpImage, mask256)

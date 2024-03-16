@@ -4,7 +4,7 @@ This extenstion for [AUTOMATIC1111/stable-diffusion-webui](https://github.com/AU
 
 This option means how to preprocess masked content before pass it into stable diffusion. It useful when you want to remove object in photo. Use inpainting model and denoising straight +-0.4
 
-It also supports my other extension: [sd-webui-replacer](https://github.com/light-and-ray/sd-webui-replacer)
+It also supports my other extension: [sd-webui-replacer](https://github.com/light-and-ray/sd-webui-replacer). Also it supports `sd-webui-forge`
 
 ![](images/gui.jpg)
 
